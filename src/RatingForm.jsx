@@ -58,7 +58,7 @@ const RatingForm = () => {
       <form onSubmit={handleSubmit}>
         <label className="block mb-2 font-semibold">Select Team:</label>
         <select
-          className="mb-4 p-2 border rounded w-full"
+          className="mb-4 p-2 border rounded w-l"
           value={team}
           onChange={(e) => setTeam(e.target.value)}
         >
@@ -70,7 +70,7 @@ const RatingForm = () => {
         {aspects.map((aspect) => (
           <div key={aspect.name} className="mb-4">
             <p className="font-semibold">{aspect.name}</p>
-            <div className="flex">
+            <div className="flex items-center justify-center">
               {[1, 2, 3, 4, 5].map((star) => (
                 <FaStar
                   key={star}

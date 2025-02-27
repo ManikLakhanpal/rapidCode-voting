@@ -1,87 +1,93 @@
 import { useState } from "react";
-import { db, auth } from "../firebase";
+import { db } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
 import { FaStar } from "react-icons/fa";
 
 const RatingForm = () => {
-  // ✅ Define State Variables
-  const [selectedTeam, setSelectedTeam] = useState("");
-  const [rating, setRating] = useState(0);
-  const [hover, setHover] = useState(null);
-  const [message, setMessage] = useState("");
+  const aspects = [
+    { name: "Basic CSS", weight: 0.3 },
+    { name: "Animations", weight: 0.15 },
+    { name: "Responsiveness", weight: 0.15 },
+    { name: "Main Features", weight: 0.25 },
+    { name: "Basic JS", weight: 0.15 },
+  ];
+
+  const [team, setTeam] = useState("");
+  const [ratings, setRatings] = useState({
+    "Basic CSS": 0,
+    Animations: 0,
+    Responsiveness: 0,
+    "Main Features": 0,
+    "Basic JS": 0,
+  });
+
+  const handleRating = (aspect, value) => {
+    setRatings((prevRatings) => ({
+      ...prevRatings,
+      [aspect]: value,
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!selectedTeam || rating === 0) {
-      setMessage("Please select a team and a rating.");
+    if (!team) {
+      alert("Please select a team before submitting.");
       return;
     }
+    const weightedScore = Object.keys(ratings).reduce(
+      (acc, key) => acc + ratings[key] * aspects.find((a) => a.name === key).weight,
+      0
+    );
 
     try {
-      const user = auth.currentUser;
-      if (!user) {
-        setMessage("You must be logged in to rate.");
-        return;
-      }
-
       await addDoc(collection(db, "ratings"), {
-        teamNumber: parseInt(selectedTeam),
-        rating: rating,
-        userId: user.uid,
+        team,
+        ratings,
+        weightedScore,
         timestamp: new Date(),
       });
-
-      setMessage("Rating submitted successfully!");
-      setSelectedTeam(""); // Reset team selection
-      setRating(0); // Reset rating
-    } catch (err) {
-      setMessage("Error submitting rating.");
-      console.error("Firestore Error:", err.message);
+      alert("Rating submitted successfully!");
+    } catch (error) {
+      console.error("Error submitting rating: ", error);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold text-center mb-4">Rate a Team</h2>
-
-      {message && <p className="text-center text-green-500">{message}</p>}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* ✅ Team Selection Dropdown */}
+    <div className="bg-white p-4 rounded-lg shadow-md">
+      <h2 className="text-xl font-bold mb-4">Rate a Team</h2>
+      <form onSubmit={handleSubmit}>
+        <label className="block mb-2 font-semibold">Select Team:</label>
         <select
-          value={selectedTeam}
-          onChange={(e) => setSelectedTeam(e.target.value)}
-          className="w-full px-4 py-2 border rounded-lg"
+          className="mb-4 p-2 border rounded w-full"
+          value={team}
+          onChange={(e) => setTeam(e.target.value)}
         >
-          <option value="">Select a Team</option>
-          {[...Array(50).keys()].map((num) => (
-            <option key={num + 1} value={num + 1}>
-              Team {num + 1}
-            </option>
-          ))}
+          <option value="">Select a team</option>
+          <option value="Team 1">Team 1</option>
+          <option value="Team 2">Team 2</option>
+          <option value="Team 3">Team 3</option>
+          <option value="Team 4">Team 4</option>
         </select>
-
-        {/* ✅ Star Rating System */}
-        <div className="flex justify-center gap-2">
-          {[...Array(5)].map((_, i) => {
-            const ratingValue = i + 1;
-            return (
-              <FaStar
-                key={ratingValue}
-                className={`cursor-pointer transition-all ${
-                  ratingValue <= (hover || rating) ? "text-yellow-400" : "text-gray-300"
-                }`}
-                size={30}
-                onMouseEnter={() => setHover(ratingValue)}
-                onMouseLeave={() => setHover(null)}
-                onClick={() => setRating(ratingValue)}
-              />
-            );
-          })}
-        </div>
-
-        <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded-lg">
+        {aspects.map((aspect) => (
+          <div key={aspect.name} className="mb-4">
+            <p className="font-semibold">{aspect.name}</p>
+            <div className="flex">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <FaStar
+                  key={star}
+                  className={`cursor-pointer text-2xl ${
+                    star <= ratings[aspect.name] ? "text-yellow-500" : "text-gray-300"
+                  }`}
+                  onClick={() => handleRating(aspect.name, star)}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+        <button
+          type="submit"
+          className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
           Submit Rating
         </button>
       </form>

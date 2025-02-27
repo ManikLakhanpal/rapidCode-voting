@@ -12,7 +12,6 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
-        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );

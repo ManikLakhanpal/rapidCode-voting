@@ -63,10 +63,9 @@ const RatingForm = () => {
           onChange={(e) => setTeam(e.target.value)}
         >
           <option value="">Select a team</option>
-          <option value="Team 1">Team 1</option>
-          <option value="Team 2">Team 2</option>
-          <option value="Team 3">Team 3</option>
-          <option value="Team 4">Team 4</option>
+          {Array.from({ length: 50 }, (_, i) => (
+            <option key={i + 1} value={`Team ${i + 1}`}>{`Team ${i + 1}`}</option>
+          ))}
         </select>
         {aspects.map((aspect) => (
           <div key={aspect.name} className="mb-4">
